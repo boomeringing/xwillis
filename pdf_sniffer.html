@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Sniffer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #output { white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>PDF Sniffer</h1>
+    <input type="file" id="fileInput" accept="application/pdf">
+    <button id="extractBtn">Extract Text</button>
+    <div id="output"></div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const output = document.getElementById('output');
+        document.getElementById('extractBtn').addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a PDF file first.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function() {
+                const typedarray = new Uint8Array(this.result);
+                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                    const pages = [];
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        pages.push(
+                            pdf.getPage(i).then(page =>
+                                page.getTextContent().then(tc => tc.items.map(it => it.str).join(' '))
+                            )
+                        );
+                    }
+                    Promise.all(pages).then(texts => {
+                        output.textContent = texts.join('\n\n');
+                    });
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
