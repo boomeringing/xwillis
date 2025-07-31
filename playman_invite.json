@@ -1,0 +1,6 @@
+{
+  "invite": "PLANSTAR-DEV-H4B9",
+  "authorized": true,
+  "node": "x401::TROSE-AGENT",
+  "grants": ["token32", "ram128", "payman_dev", "shellbot_sync"]
+}
