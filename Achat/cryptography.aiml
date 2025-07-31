@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml>
+  <category>
+    <pattern>WHAT IS RAM LEVEL ENCRYPTION</pattern>
+    <template>
+      RAM level encryption is a conceptual approach where data in memory is ciphered directly. This file outlines a musical approach using 88 piano keys as the initial seed. The technique is suitable for x32 or x64 systems.
+    </template>
+  </category>
+  <category>
+    <pattern>EXPLAIN 88 KEY CIPHER</pattern>
+    <template>
+      The 88 key cipher maps each piano key to a unique byte value. By playing sequences, you generate a pseudo-random stream that acts as an encryption key. The same sequence decrypts the data when applied in reverse.
+    </template>
+  </category>
+</aiml>
