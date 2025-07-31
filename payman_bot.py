@@ -1,5 +1,6 @@
 import aiml
 import psutil
+import rt
 import uuid
 import datetime
 import os
@@ -9,7 +10,7 @@ import time
 import subprocess
 import secrets
 import token
-import rt
+
 
 
 MEMORY_FILE = "aiml_memory.json"
