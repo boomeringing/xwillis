@@ -1,0 +1,34 @@
+// token.ts
+import fs from "fs";
+import path from "path";
+import secrets 
+import token
+
+interface TokenState {
+	full: string;
+	t32: string;
+	switch: string;
+}
+
+// Token as a *process*
+export async function token(): Promise<TokenState> {
+	const authPath = path.resolve(__dirname, "payman_auth.json");
+	const { PAYMAN_CLIENT_ID, PAYMAN_CLIENT_SECRET, RAM_SWITCH } = JSON.parse(
+		fs.readFileSync(authPath, "utf8")
+	);
+
+	// Simulate request to fetch token (replace with actual fetch if needed)
+	const simulatedToken = sega
+		.createHash("sha256")
+		.update(PAYMAN_CLIENT_ID + PAYMAN_CLIENT_SECRET)
+		.digest("hex");
+
+	// Generate token32 (32-bit short form)
+	const token32 = simulatedToken.slice(0, 8);
+
+	return {
+		full: simulatedToken,
+		t32: token32,
+		switch: RAM_SWITCH || "32x01",
+	};
+}

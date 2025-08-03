@@ -1,0 +1,36 @@
+// payman-server.js
+import http from "http";
+import { PaymanClient } from "@paymanai/payman-ts";
+import fs from "fs";
+import path from "path";
+
+const authPath = path.resolve(__dirname, "payman_auth.json");
+const { PAYMAN_CLIENT_ID, PAYMAN_CLIENT_SECRET } = JSON.parse(fs.readFileSync(authPath, "utf8"));
+
+const payman = PaymanClient.withClientCredentials({
+	clientId: PAYMAN_CLIENT_ID,
+	clientSecret: PAYMAN_CLIENT_SECRET,
+});
+
+const RAM_SWITCH = "64x01"; // Confirmed high-freq secure port
+
+http.createServer(async (req, res) => {
+	if (req.url === "/handshake" && req.method === "POST") {
+		console.log(`⚡ Incoming RAM switch: ${RAM_SWITCH}`);
+
+		// Try authentication as a handshake
+		try {
+			const wallets = await payman.ask("List all wallets");
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ status: "handshake-accepted", RAM_SWITCH, wallets }));
+		} catch (err) {
+			res.writeHead(403, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ error: "handshake-denied", reason: err.message }));
+		}
+	} else {
+		res.writeHead(404);
+		res.end();
+	}
+}).listen(3000, () => {
+	console.log("PayManServer_ai running on port 3000 using RAM_SWITCH:", RAM_SWITCH);
+});

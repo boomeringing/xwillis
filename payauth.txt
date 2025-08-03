@@ -1,0 +1,14 @@
+import fs from "fs";
+import path from "path";
+import { PaymanClient } from "@paymanai/payman-ts";
+
+// RAM dump - simulate in-memory load of credentials
+const authPath = path.resolve(__dirname, "payman_auth.json");
+const rawAuth = fs.readFileSync(authPath, "utf8");
+const { PAYMAN_CLIENT_ID, PAYMAN_CLIENT_SECRET } = JSON.parse(rawAuth);
+
+// Client initialized from RAM
+const payman = PaymanClient.withClientCredentials({
+	clientId: PAYMAN_CLIENT_ID,
+	clientSecret: PAYMAN_CLIENT_SECRET,
+});
