@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Xavier wants to meet you!</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#6ee7b7;--muted:#9aa6b2}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#071023, #0b1220);color:#e6eef6}
+    .card{width:min(780px,96vw);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:24px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    h1{margin:0 0 6px 0;font-size:20px}
+    p{margin:0 0 18px 0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-size:14px}
+    textarea{min-height:100px;resize:vertical}
+    .actions{display:flex;gap:12px;justify-content:flex-end;margin-top:14px}
+    button{background:var(--accent);color:#022029;padding:10px 14px;border-radius:10px;border:0;font-weight:600;cursor:pointer}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .note{font-size:12px;color:var(--muted);margin-top:10px}
+    .small{font-size:12px;color:var(--muted)}
+    .row{display:flex;gap:12px}
+    .full-width{grid-column:1 / -1}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Quick Contact Submission</h1>
+    <p>This page collects owner/contact info and opens your mail client to send the details to the recipient, then attempts to close the window. Fields are required unless marked optional.</p>
+
+    <form id="contactForm">
+      <div class="grid">
+        <div>
+          <label for="fullname">Full name</label>
+          <input id="fullname" name="fullname" required autocomplete="name" />
+        </div>
+        <div>
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" required autocomplete="email" />
+        </div>
+        <div>
+          <label for="phone">Phone (optional)</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" />
+        </div>
+        <div>
+          <label for="role">Role / Relationship</label>
+          <input id="role" name="role" placeholder="owner / manager / contact" />
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="organization">Organization / Property (optional)</label>
+        <input id="organization" name="organization" />
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="address">Street address (optional)</label>
+        <input id="address" name="address" />
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="besttime">Best time to call</label>
+        <div class="row">
+          <select id="besttime" name="besttime" aria-label="Best time to call">
+            <option value="Anytime">Anytime</option>
+            <option value="Weekday Morning (8:00 - 11:00)">Weekday Morning (8:00 - 11:00)</option>
+            <option value="Weekday Midday (11:00 - 14:00)">Weekday Midday (11:00 - 14:00)</option>
+            <option value="Weekday Afternoon (14:00 - 17:00)">Weekday Afternoon (14:00 - 17:00)</option>
+            <option value="Weekday Evening (17:00 - 20:00)">Weekday Evening (17:00 - 20:00)</option>
+            <option value="Weekend Morning (9:00 - 12:00)">Weekend Morning (9:00 - 12:00)</option>
+            <option value="Weekend Afternoon (12:00 - 17:00)">Weekend Afternoon (12:00 - 17:00)</option>
+            <option value="Specific">Specific time (set below)</option>
+          </select>
+          <input id="specificTime" name="specificTime" type="time" style="width:150px;" aria-label="Specific call time" />
+        </div>
+        <p class="note">Choose a general window or pick a specific local time. If "Specific" is selected, the time entered will be used.</p>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="notes">Notes / Additional info (optional)</label>
+        <textarea id="notes" name="notes" placeholder="Anything else to include..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="secondary" id="previewBtn">Preview mail</button>
+        <button type="submit" id="sendBtn">Send via mail client</button>
+      </div>
+
+      <p class="note">By submitting, this page will open your default mail client to compose a message. Your browser may prompt you to allow the action. We do not store any data on this page.</p>
+    </form>
+
+    <div id="result" class="small" style="margin-top:12px;display:none"></div>
+  </main>
+
+  <script>
+    // Recipient email set to the provided contact (you can change this).
+    const RECIPIENT = 'xavier.willis@snhu.edu';
+    const SUBJECT = 'Contact Info Submission';
+
+    function encode(s){return encodeURIComponent(String(s||'').trim())}
+
+    function buildMailto(form){
+      const ts = new Date().toLocaleString();
+      const body = [];
+      body.push('Timestamp: ' + ts);
+      body.push('\n-- Contact Details --');
+      body.push('Full name: ' + form.fullname.value);
+      body.push('Email: ' + form.email.value);
+      body.push('Phone: ' + (form.phone.value || ''));
+      body.push('Role: ' + (form.role.value || ''));
+      body.push('Organization: ' + (form.organization.value || ''));
+      body.push('Address: ' + (form.address.value || ''));
+
+      // Best time handling
+      const bt = form.besttime.value || '';
+      let bestTimeText = bt;
+      if(bt === 'Specific'){
+        const t = form.specificTime.value;
+        bestTimeText = t ? `Specific time: ${t}` : 'Specific time requested (no time entered)';
+      }
+      body.push('Best time to call: ' + bestTimeText);
+
+      body.push('\nNotes: ' + (form.notes.value || ''));
+
+      const mailto = `mailto:${RECIPIENT}?subject=${encode(SUBJECT)}&body=${encode(body.join('\n'))}`;
+      return mailto;
+    }
+
+    const form = document.getElementById('contactForm');
+    const result = document.getElementById('result');
+    const previewBtn = document.getElementById('previewBtn');
+    const besttime = document.getElementById('besttime');
+    const specificTime = document.getElementById('specificTime');
+
+    // Show/hide specificTime input based on selection (visual cue only)
+    function updateSpecificVisibility(){
+      if(besttime.value === 'Specific'){
+        specificTime.style.opacity = '1';
+        specificTime.disabled = false;
+      }else{
+        specificTime.style.opacity = '0.66';
+        specificTime.disabled = false; // keep enabled so value can be captured if user entered it
+      }
+    }
+    besttime.addEventListener('change', updateSpecificVisibility);
+    updateSpecificVisibility();
+
+    previewBtn.addEventListener('click', ()=>{
+      const mailto = buildMailto(form);
+      result.style.display = 'block';
+      result.textContent = 'Preview mailto URL (won\'t send): ' + mailto;
+    });
+
+    form.addEventListener('submit', async (ev)=>{
+      ev.preventDefault();
+      result.style.display = 'block';
+      result.textContent = 'Preparing mail client...';
+
+      try{
+        const mailto = buildMailto(form);
+        // Try opening the mail client. Using window.location.href or window.open.
+        // Some browsers will block automatic navigation; try both.
+        const newWin = window.open(mailto, '_blank');
+        if(!newWin){
+          // last attempt by changing location
+          window.location.href = mailto;
+        }
+
+        // Give the mail client a second to open, then attempt to close.
+        setTimeout(()=>{
+          result.textContent = 'Mail client should be open. This window will now attempt to close.';
+          // Attempt to close the window. Note: browsers only allow window.close() on windows opened by script.
+          try{ window.close(); }catch(e){}
+        }, 800);
+
+      }catch(err){
+        result.textContent = 'Failed to open mail client automatically. Please copy the previewed mailto link and paste it into your mail client manually.';
+        console.error(err);
+      }
+    });
+
+    // Auto-focus the first input
+    document.getElementById('fullname').focus();
+  </script>
+</body>
+</html>
